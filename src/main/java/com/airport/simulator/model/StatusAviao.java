@@ -1,3 +1,5 @@
+package com.airport.simulator.model;
+
 public enum StatusAviao {
     QUERENDO_DECOLAR (0),
     DECOLANDO (1),

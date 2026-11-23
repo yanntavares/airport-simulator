@@ -1,3 +1,5 @@
+package com.airport.simulator.model;
+
 public class Aviao implements Runnable {
     private String modelo;
     private int capacidade;
@@ -50,4 +52,5 @@ public class Aviao implements Runnable {
     // aqui vou precisar da torre de controle para definir o ciclo de vida do avião
     @Override
     public void run() {
+    }
 }
