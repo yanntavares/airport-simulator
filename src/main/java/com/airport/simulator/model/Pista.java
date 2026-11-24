@@ -1,3 +1,7 @@
+package com.airport.simulator.model;
+
+import com.airport.simulator.exception.ColisaoException;
+
 public class Pista {
     private String nome;
     private boolean ocupada;
@@ -23,7 +27,7 @@ public class Pista {
 
     public void ocupar(Aviao aviao) {
         if (this.ocupada) {
-            throw new ColisaoException();
+            throw new ColisaoException("Pista " + nome + " já está ocupada por " + this.aviao.getNumeroVoo());
         }
         this.ocupada = true;
         this.aviao = aviao;
