@@ -227,10 +227,12 @@ public class TorreControle implements Runnable {
         TipoSolicitacao tipo = escolherTipo();
         Solicitacao solicitacao = filaDe(tipo).pollFirst();
 
-        // [CONTROLE-CONCORRENCIA] A pista só sai da lista de livres uma vez.
-        // Se esta linha for trocada por uma escolha fixa (ex.: pistas.get(0)),
-        // a torre passa a conceder pistas já ocupadas e a ColisaoException é lançada.
-        Pista pista = pistasLivres.pollFirst();
+        // [CONTROLE-CONCORRENCIA] A pista concedida precisa sair da lista de livres.
+        // Se a linha "pistasLivres.removeFirst()" abaixo for comentada, a pista continua
+        // "livre" e a torre a concede de novo enquanto está ocupada: pista.ocupar()
+        // lança a ColisaoException ("Pista X já está ocupada por Y").
+        Pista pista = pistasLivres.peekFirst();
+        pistasLivres.removeFirst();   // [CONTROLE-CONCORRENCIA] comentar esta linha desativa o controle
 
         pistasEmUso.put(pista, solicitacao);
         pista.ocupar(solicitacao.aviao());   // NOVA
