@@ -223,7 +223,7 @@ public class TorreControle implements Runnable {
         return !pistasLivres.isEmpty() && (!filaPouso.isEmpty() || !filaDecolagem.isEmpty());
     }
 
-    private void conceder() {
+        private void conceder() {
         TipoSolicitacao tipo = escolherTipo();
         Solicitacao solicitacao = filaDe(tipo).pollFirst();
 
@@ -233,6 +233,7 @@ public class TorreControle implements Runnable {
         Pista pista = pistasLivres.pollFirst();
 
         pistasEmUso.put(pista, solicitacao);
+        pista.ocupar(solicitacao.aviao());   // NOVA
         Aviao aviao = solicitacao.aviao();
         aviao.setStatus(tipo == TipoSolicitacao.POUSO ? StatusAviao.POUSANDO : StatusAviao.DECOLANDO);
 
@@ -260,7 +261,7 @@ public class TorreControle implements Runnable {
         pousosConsecutivos = concedido == TipoSolicitacao.POUSO ? pousosConsecutivos + 1 : 0;
     }
 
-    private void liberarInterno(Pista pista, Aviao aviao) {
+        private void liberarInterno(Pista pista, Aviao aviao) {
         Solicitacao uso = pistasEmUso.get(pista);
         if (uso == null) {
             throw new EstadoInvalidoException("O voo " + aviao.getNumeroVoo() + " liberou a pista "
@@ -272,6 +273,7 @@ public class TorreControle implements Runnable {
         }
 
         pistasEmUso.remove(pista);
+        pista.liberar();                     // NOVA
         pistasLivres.addLast(pista);
         registrarEvento(aviao.getNumeroVoo() + " liberou a pista " + pista.getNome());
         haTrabalho.signalAll();
