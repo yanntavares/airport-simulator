@@ -29,7 +29,7 @@ public class Application {
 
         List<Pista> pistas = criarPistas(config.pistas());
         TorreControle torre = new TorreControle(pistas, config.maxPousosConsecutivos(), Painel::registrar);
-        List<Aviao> avioes = criarAvioes(config);
+        List<Aviao> avioes = criarAvioes(config, torre);
         Painel painel = new Painel(torre, avioes, config.intervaloPainelMs(), config.limparTela());
 
         torre.registrarEvento("Simulação configurada: " + config.avioesParaPousar() + " avião(ões) para pousar, "
@@ -38,10 +38,6 @@ public class Application {
         iniciar("painel", painel);
         iniciar("torre", torre);
 
-        // TODO (Yann): quando o Aviao.run() existir, ele precisa receber a torre e a Configuracao
-        // (tempos de voo, solo, pouso e decolagem), por exemplo:
-        //     aviao.configurar(torre, config);
-        // antes de iniciar a thread abaixo.
         for (Aviao aviao : avioes) {
             iniciar(aviao.getNumeroVoo(), aviao);
         }
@@ -55,28 +51,28 @@ public class Application {
         return pistas;
     }
 
-    private static List<Aviao> criarAvioes(Configuracao config) {
+    private static List<Aviao> criarAvioes(Configuracao config, TorreControle torre) {
         Random sorteio = new Random();
         Set<String> voosUsados = new HashSet<>();
         List<Aviao> avioes = new ArrayList<>();
 
         for (int i = 0; i < config.avioesParaPousar(); i++) {
-            avioes.add(novoAviao(sorteio, voosUsados, StatusAviao.QUERENDO_POUSAR));
+            avioes.add(novoAviao(sorteio, voosUsados, StatusAviao.QUERENDO_POUSAR, torre, config));
         }
         for (int i = 0; i < config.avioesParaDecolar(); i++) {
-            avioes.add(novoAviao(sorteio, voosUsados, StatusAviao.QUERENDO_DECOLAR));
+            avioes.add(novoAviao(sorteio, voosUsados, StatusAviao.QUERENDO_DECOLAR, torre, config));
         }
         return avioes;
     }
 
-    private static Aviao novoAviao(Random sorteio, Set<String> voosUsados, StatusAviao statusInicial) {
+    private static Aviao novoAviao(Random sorteio, Set<String> voosUsados, StatusAviao statusInicial, TorreControle torre, Configuracao configuracao) {
         String numeroVoo;
         do {
             numeroVoo = COMPANHIAS[sorteio.nextInt(COMPANHIAS.length)] + " " + (1000 + sorteio.nextInt(9000));
         } while (!voosUsados.add(numeroVoo)); // garante número de voo único
 
         int modelo = sorteio.nextInt(MODELOS.length);
-        return new Aviao(MODELOS[modelo], CAPACIDADES[modelo], numeroVoo, statusInicial);
+        return new Aviao(MODELOS[modelo], CAPACIDADES[modelo], numeroVoo, statusInicial, torre, configuracao);
     }
 
     private static void iniciar(String nome, Runnable tarefa) {

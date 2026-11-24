@@ -5,7 +5,8 @@ public enum StatusAviao {
     DECOLANDO (1),
     EM_VOO (2),
     QUERENDO_POUSAR (3),
-    POUSANDO (4);
+    POUSANDO (4),
+    EM_SOLO(5);
 
     private final int codigo;
 
