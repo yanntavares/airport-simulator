@@ -11,5 +11,28 @@
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Arquivo de configuração usado pelo "mvn exec:exec"; troque com -Dconfig=configs/c2.properties -->
+        <config>config.properties</config>
     </properties>
+
+    <build>
+        <plugins>
+            <!-- mvn -q compile exec:exec  → roda a simulação com asserções ligadas (-ea) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <executable>java</executable>
+                    <arguments>
+                        <argument>-ea</argument>
+                        <argument>-cp</argument>
+                        <classpath/>
+                        <argument>com.airport.simulator.Application</argument>
+                        <argument>${config}</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
