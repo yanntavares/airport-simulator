@@ -34,6 +34,8 @@ public class Pista {
     }
 
     public void liberar() {
+        // [ASSERCAO 1] Só se libera uma pista que estava ocupada.
+        assert this.ocupada : "A pista " + nome + " foi liberada, mas já estava livre";
         this.ocupada = false;
         this.aviao = null;
     }

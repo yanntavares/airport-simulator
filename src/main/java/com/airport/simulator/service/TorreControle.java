@@ -4,10 +4,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -223,19 +226,23 @@ public class TorreControle implements Runnable {
         return !pistasLivres.isEmpty() && (!filaPouso.isEmpty() || !filaDecolagem.isEmpty());
     }
 
-        private void conceder() {
+    private void conceder() {
         TipoSolicitacao tipo = escolherTipo();
         Solicitacao solicitacao = filaDe(tipo).pollFirst();
 
         // [CONTROLE-CONCORRENCIA] A pista concedida precisa sair da lista de livres.
         // Se a linha "pistasLivres.removeFirst()" abaixo for comentada, a pista continua
-        // "livre" e a torre a concede de novo enquanto está ocupada: pista.ocupar()
-        // lança a ColisaoException ("Pista X já está ocupada por Y").
+        // "livre" e a torre a concede de novo enquanto está ocupada:
+        //   - com "java -ea": a [ASSERCAO 2] dispara logo na 1ª autorização
+        //     ("Contagem de pistas inconsistente: 2 livre(s) + 1 em uso...");
+        //   - sem "-ea": pista.ocupar() lança a ColisaoException
+        //     ("Pista X já está ocupada por Y") quando a pista é concedida de novo.
+        // Nos dois casos a simulação para e mostra o motivo na tela.
         Pista pista = pistasLivres.peekFirst();
         pistasLivres.removeFirst();   // [CONTROLE-CONCORRENCIA] comentar esta linha desativa o controle
 
         pistasEmUso.put(pista, solicitacao);
-        pista.ocupar(solicitacao.aviao());   // NOVA
+        pista.ocupar(solicitacao.aviao());
         Aviao aviao = solicitacao.aviao();
         aviao.setStatus(tipo == TipoSolicitacao.POUSO ? StatusAviao.POUSANDO : StatusAviao.DECOLANDO);
 
@@ -243,6 +250,7 @@ public class TorreControle implements Runnable {
         registrarEvento("Torre autorizou " + descricao(tipo) + " de " + aviao.getNumeroVoo()
                 + " na pista " + pista.getNome());
 
+        verificarInvariantes();
         solicitacao.autorizacao().complete(pista);
     }
 
@@ -263,7 +271,7 @@ public class TorreControle implements Runnable {
         pousosConsecutivos = concedido == TipoSolicitacao.POUSO ? pousosConsecutivos + 1 : 0;
     }
 
-        private void liberarInterno(Pista pista, Aviao aviao) {
+    private void liberarInterno(Pista pista, Aviao aviao) {
         Solicitacao uso = pistasEmUso.get(pista);
         if (uso == null) {
             throw new EstadoInvalidoException("O voo " + aviao.getNumeroVoo() + " liberou a pista "
@@ -275,10 +283,55 @@ public class TorreControle implements Runnable {
         }
 
         pistasEmUso.remove(pista);
-        pista.liberar();                     // NOVA
+        pista.liberar();
         pistasLivres.addLast(pista);
         registrarEvento(aviao.getNumeroVoo() + " liberou a pista " + pista.getNome());
+
+        verificarInvariantes();
         haTrabalho.signalAll();
+    }
+
+    /**
+     * Asserções (só rodam com {@code java -ea}). Conferem, depois de toda
+     * mudança no estado, regras que nunca podem ser quebradas. Se o controle de
+     * concorrência falhar, uma delas dispara um {@link AssertionError} com o motivo.
+     * Sempre chamada com a trava adquirida.
+     */
+    private void verificarInvariantes() {
+        // [ASSERCAO 2] Nenhuma pista some nem é duplicada: livres + em uso = total.
+        assert pistasLivres.size() + pistasEmUso.size() == pistas.size()
+                : "Contagem de pistas inconsistente: " + pistasLivres.size() + " livre(s) + "
+                + pistasEmUso.size() + " em uso, mas o aeroporto tem " + pistas.size();
+
+        // [ASSERCAO 3] Uma pista nunca está livre e em uso ao mesmo tempo.
+        for (Pista livre : pistasLivres) {
+            assert !pistasEmUso.containsKey(livre) && !livre.isOcupada()
+                    : "A pista " + livre.getNome() + " está na lista de livres, mas está em uso";
+        }
+
+        // [ASSERCAO 4] Cada avião aparece em no máximo um lugar (uma fila OU uma pista).
+        Set<Aviao> vistos = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (Solicitacao s : filaPouso) {
+            assert vistos.add(s.aviao()) : "O voo " + s.aviao().getNumeroVoo() + " aparece duas vezes";
+        }
+        for (Solicitacao s : filaDecolagem) {
+            assert vistos.add(s.aviao()) : "O voo " + s.aviao().getNumeroVoo() + " aparece duas vezes";
+        }
+        for (Solicitacao s : pistasEmUso.values()) {
+            assert vistos.add(s.aviao()) : "O voo " + s.aviao().getNumeroVoo()
+                    + " está em uma fila e usando uma pista ao mesmo tempo";
+        }
+
+        // [ASSERCAO 5] Quem está na pista tem status coerente com a operação autorizada.
+        for (Map.Entry<Pista, Solicitacao> uso : pistasEmUso.entrySet()) {
+            StatusAviao esperado = uso.getValue().tipo() == TipoSolicitacao.POUSO
+                    ? StatusAviao.POUSANDO
+                    : StatusAviao.DECOLANDO;
+            Aviao aviao = uso.getValue().aviao();
+            assert aviao.getStatus() == esperado
+                    : "O voo " + aviao.getNumeroVoo() + " está na " + uso.getKey().getNome()
+                    + " com status " + aviao.getStatus() + " (esperado: " + esperado + ")";
+        }
     }
 
     private Deque<Solicitacao> filaDe(TipoSolicitacao tipo) {
