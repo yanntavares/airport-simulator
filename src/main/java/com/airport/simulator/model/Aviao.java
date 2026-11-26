@@ -3,12 +3,12 @@ import com.airport.simulator.config.Configuracao;
 import com.airport.simulator.service.TorreControle;
 
 public class Aviao implements Runnable {
-    private String modelo;
-    private int capacidade;
-    private String numeroVoo;
+    private final String modelo;
+    private final int capacidade;
+    private final String numeroVoo;
     private volatile StatusAviao status;
-    private TorreControle torreControle;
-    private Configuracao configuracao;
+    private final TorreControle torreControle;
+    private final Configuracao configuracao;
 
     public Aviao(String modelo, int capacidade, String numeroVoo, StatusAviao status, TorreControle torreControle, Configuracao configuracao) {
         this.modelo = modelo;
@@ -23,24 +23,12 @@ public class Aviao implements Runnable {
         return modelo;
     }
 
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
-    }
-
     public String getNumeroVoo() {
         return numeroVoo;
     }
 
-    public void setNumeroVoo(String numeroVoo) {
-        this.numeroVoo = numeroVoo;
-    }
-
     public int getCapacidade() {
         return capacidade;
-    }
-
-    public void setCapacidade(int capacidade) {
-        this.capacidade = capacidade;
     }
 
     public StatusAviao getStatus() {
