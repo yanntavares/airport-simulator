@@ -277,7 +277,7 @@ O projeto usa apenas a biblioteca padrão do Java (`java.util.concurrent`, `java
 
 | Parte do projeto | Usou IA? | Ferramenta e modelo | O que foi feito com a IA |
 |---|---|---|---|
-| `TorreControle` (trava, filas, política) | _preencher_ | _ex.: Claude (Anthropic), modelo X_ | _preencher_ |
+| `TorreControle` (trava, filas, política) | sim | Claude Anthropic | auxiliou no firmamento das regras de negócio com base no que foi pedido, bem como correção de sintaxe |
 | `Aviao` / `Pista` / `StatusAviao` | Sim | Gemini | ajudou a debuggar o ciclo de vida do avião, uso correto dos try/catch |
 | `Painel` | Sim | Claude (Anthropic) | auxiliou a corrigir erros na primeira versão do Painel, e a adaptou à `TorreControle` (`obterEstado()`). |
 | `Configuracao` / `Application` | Sim | Claude (Anthropic) | Auxiliou na correção do `Application` e na criação do config C1 e C2 |
