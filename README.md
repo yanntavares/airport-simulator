@@ -282,6 +282,6 @@ O projeto usa apenas a biblioteca padrão do Java (`java.util.concurrent`, `java
 | `TorreControle` (trava, filas, política) | _preencher_ | _ex.: Claude (Anthropic), modelo X_ | _preencher_ |
 | `Aviao` / `Pista` / `StatusAviao` | Sim | Gemini | ajudou a debuggar o ciclo de vida do avião, uso correto dos try/catch |
 | `Painel` | Sim | Claude (Anthropic) | auxiliou a corrigir erros na primeira versão do Painel, e a adaptou à `TorreControle` (`obterEstado()`). |
-| `Configuracao` / `Application` | Sim |Claude (Anthropic) | auxiliou na correção do 'Application' |
-| Exceções e asserções | _preencher_ | _preencher_ | _preencher_ |
+| `Configuracao` / `Application` | Sim | Claude (Anthropic) | Auxiliou na correção do `Application` e na criação do config C1 e C2 |
+| Exceções e asserções | Sim | Claude (Anthropic) | Ajudou na lógica das asserções (quais regras conferir e onde chamar `verificarInvariantes()`) e na correção de bugs |
 | Diagramas e este `README.md` | Sim | Claude (Anthropic) | Redação do README e dos diagramas a partir da leitura do código do repositório; revisado pela equipe. |
