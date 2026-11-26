@@ -275,8 +275,6 @@ O projeto usa apenas a biblioteca padrão do Java (`java.util.concurrent`, `java
 
 ## 9. Uso de IA Generativa
 
-> ⚠️ **PREENCHER (equipe):** o professor exige que se informe **quais partes foram feitas com IA generativa e quais ferramentas e modelos foram usados**. Complete a tabela abaixo com a realidade do grupo; se alguma parte não usou IA, escreva "nenhuma". Itens sem informação devem ser removidos antes da entrega.
-
 | Parte do projeto | Usou IA? | Ferramenta e modelo | O que foi feito com a IA |
 |---|---|---|---|
 | `TorreControle` (trava, filas, política) | _preencher_ | _ex.: Claude (Anthropic), modelo X_ | _preencher_ |
